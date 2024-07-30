@@ -15,17 +15,24 @@ const schema = Yup.object().shape({
     .min(8, "Password must be at least 8 characters"),
   confirmPassword: Yup.string()
     .required("Confirm Password is a required field")
-    .oneOf([Yup.ref('password'), ''], "Passwords must match"),
+    .oneOf([Yup.ref("password"), ""], "Passwords must match"),
 });
 
 const Registration = () => {
   return (
     <div className="bg-black min-h-screen w-full flex justify-center items-center">
       <div className="bg-mainBackgroundColor w-[400px] rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">Register</h2>
+        <h2 className="text-3xl font-bold text-white mb-6 text-center">
+          Register
+        </h2>
         <Formik
           validationSchema={schema}
-          initialValues={{ name: "", email: "", password: "", confirmPassword: "" }}
+          initialValues={{
+            name: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+          }}
           onSubmit={(values) => {
             // Alert the input values of the form that we filled
             alert(JSON.stringify(values));
@@ -95,7 +102,10 @@ const Registration = () => {
                 )}
               </div>
               <div className="mb-6">
-                <label htmlFor="confirmPassword" className="block text-gray-400 mb-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-gray-400 mb-2"
+                >
                   Confirm Password
                 </label>
                 <input
@@ -109,7 +119,9 @@ const Registration = () => {
                   id="confirmPassword"
                 />
                 {errors.confirmPassword && touched.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.confirmPassword}
+                  </p>
                 )}
               </div>
               <button
