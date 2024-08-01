@@ -1,10 +1,12 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import axiosInstance from "../config/AxiosInterceptors";
+import { useNavigate } from "react-router-dom";
 
 // Creating schema
 const schema = Yup.object().shape({
-  name: Yup.string()
+  username: Yup.string()
     .required("Name is a required field")
     .min(2, "Name must be at least 2 characters"),
   email: Yup.string()
@@ -19,6 +21,9 @@ const schema = Yup.object().shape({
 });
 
 const Registration = () => {
+
+  const navigate=useNavigate()
+  
   return (
     <div className="bg-black min-h-screen w-full flex justify-center items-center">
       <div className="bg-mainBackgroundColor w-[400px] rounded-lg shadow-lg p-8">
@@ -28,14 +33,27 @@ const Registration = () => {
         <Formik
           validationSchema={schema}
           initialValues={{
-            name: "",
+            username: "",
             email: "",
             password: "",
             confirmPassword: "",
           }}
-          onSubmit={(values) => {
-            // Alert the input values of the form that we filled
-            alert(JSON.stringify(values));
+          onSubmit={async (values, { setSubmitting}) => {
+            try {
+              console.log({values});
+              
+              const response = await axiosInstance.post('/register', values);
+           
+              console.log('Registration successful:', response.data);
+
+              if(response.status==201){ 
+                navigate("/login")
+              }
+            } catch (error) {
+              console.error('Registration error:', error);
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
           {({
@@ -48,21 +66,21 @@ const Registration = () => {
           }) => (
             <form noValidate onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label htmlFor="name" className="block text-gray-400 mb-2">
+                <label htmlFor="username" className="block text-gray-400 mb-2">
                   Name
                 </label>
                 <input
                   type="text"
-                  name="name"
+                  name="username"
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  value={values.name}
-                  placeholder="Enter your name"
+                  value={values.username}
+                  placeholder="Enter your username"
                   className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  id="name"
+                  id="username"
                 />
-                {errors.name && touched.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                {errors.username && touched.username && (
+                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
                 )}
               </div>
               <div className="mb-4">
