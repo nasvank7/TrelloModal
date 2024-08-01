@@ -8,6 +8,7 @@ import Registration from "./auth/Register";
 import TrelloBoard from "./components/trelloBoard";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./Layout/Layout";
+import ProtectedRoute from "./AuthLayout/AuthLayout";
 function App() {
   // const [count, setCount] = useState(0)
 
@@ -16,7 +17,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />} >
-            <Route path="/" element={<TrelloBoard />} />
+
+            <Route path="/" element={<ProtectedRoute>
+              <TrelloBoard />
+            </ProtectedRoute>} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Registration />} />
