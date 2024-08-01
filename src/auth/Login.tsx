@@ -1,18 +1,44 @@
 import React from "react";
-import { Formik } from "formik";
-import * as Yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import axiosInstance from "../config/AxiosInterceptors";
+import { useNavigate } from "react-router-dom";
+interface values {
+  emailOrUsername: string,
+  password: string
+}
 
-// Creating schema
-const schema = Yup.object().shape({
-  email: Yup.string()
-    .required("Email is a required field")
-    .email("Invalid email format"),
-  password: Yup.string()
-    .required("Password is a required field")
-    .min(8, "Password must be at least 8 characters"),
-});
+interface tsPayload {
+  email?: string;
+  username?: string;
+  password: string
+}
+const validate = (values: values) => {
+  const errors: { [key: string]: string } = {};
+
+  // Check if the input is either a valid email or username
+  const isEmail = /\S+@\S+\.\S+/.test(values.emailOrUsername);
+
+  if (!values.emailOrUsername) {
+    errors.emailOrUsername = "Email or username is required";
+  } else if (!isEmail && values.emailOrUsername.trim() === "") {
+    errors.emailOrUsername = "Username cannot be empty";
+  } else if (isEmail && !/\S+@\S+\.\S+/.test(values.emailOrUsername)) {
+    errors.emailOrUsername = "Invalid email format";
+  }
+
+  // Validate password
+  if (!values.password) {
+    errors.password = "Password is required";
+  } else if (values.password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
+  }
+
+  return errors;
+};
 
 const Login = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-black min-h-screen w-full flex justify-center items-center">
       <div className="bg-mainBackgroundColor w-[400px] rounded-lg shadow-lg p-8">
@@ -20,65 +46,77 @@ const Login = () => {
           Login
         </h2>
         <Formik
-          validationSchema={schema}
-          initialValues={{ email: "", password: "" }}
-          onSubmit={(values) => {
-            // Alert the input values of the form that we filled
-            alert(JSON.stringify(values));
+          initialValues={{
+            emailOrUsername: "",
+            password: "",
+          }}
+          validate={validate}
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              const payload: tsPayload = {
+                password: values.password,
+              };
+              const isEmail = /\S+@\S+\.\S+/.test(values.emailOrUsername);
+
+              // Determine if the input is an email or username
+              if (isEmail) {
+                payload.email = values.emailOrUsername;
+              } else {
+                payload.username = values.emailOrUsername;
+              }
+
+              const response = await axiosInstance.post('/login', payload);
+              console.log(response, "Whole response");
+
+              console.log('Login successful:', response.data);
+
+              if (response.status === 200) {
+                localStorage.setItem("jwt",response.data.token)
+                navigate("/");
+              }
+            } catch (error) {
+              console.error('Login error:', error);
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
-          {({
-            values,
-            errors,
-            touched,
-            handleChange,
-            handleBlur,
-            handleSubmit,
-          }) => (
-            <form noValidate onSubmit={handleSubmit}>
+          {({ isSubmitting }) => (
+            <Form>
               <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-400 mb-2">
-                  Email
+                <label htmlFor="emailOrUsername" className="block text-gray-400 mb-2">
+                  Email or Username
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.email}
-                  placeholder="Enter email"
+                <Field
+                  type="text"
+                  name="emailOrUsername"
+                  placeholder="Enter email or username"
                   className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  id="email"
+                  id="emailOrUsername"
                 />
-                {errors.email && touched.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                )}
+                <ErrorMessage name="emailOrUsername" component="p" className="text-red-500 text-sm mt-1" />
               </div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <label htmlFor="password" className="block text-gray-400 mb-2">
                   Password
                 </label>
-                <input
+                <Field
                   type="password"
                   name="password"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.password}
                   placeholder="Enter password"
                   className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   id="password"
                 />
-                {errors.password && touched.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
+                <ErrorMessage name="password" component="p" className="text-red-500 text-sm mt-1" />
               </div>
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
               >
                 Login
               </button>
-            </form>
+            </Form>
           )}
         </Formik>
       </div>
