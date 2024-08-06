@@ -16,11 +16,15 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route element={<Layout />} >
-
-            <Route path="/" element={<ProtectedRoute>
-              <TrelloBoard />
-            </ProtectedRoute>} />
+          <Route element={<Layout />}>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <TrelloBoard />
+                </ProtectedRoute>
+              }
+            />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Registration />} />

@@ -144,9 +144,7 @@ const ColumnContainer = (props: Props) => {
           className="bg-mainBackgroundColor text-base w-full h-[60px] cursor-grab rounded-md rounded-b-none p-3 font-bold border-coloumnBackgroundColor
             border-4 flex items-center justify-between"
         >
-          <div className="flex justify-center items-center bg-coloumnBackgroundColor px-2 py-1 text-sm rounded-full">
-            
-          </div>
+          <div className="flex justify-center items-center bg-coloumnBackgroundColor px-2 py-1 text-sm rounded-full"></div>
 
           {!editNode && column.title}
           {editNode && (

@@ -2,15 +2,16 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import axiosInstance from "../config/AxiosInterceptors";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/userContext";
 interface values {
-  emailOrUsername: string,
-  password: string
+  emailOrUsername: string;
+  password: string;
 }
 
 interface tsPayload {
   email?: string;
   username?: string;
-  password: string
+  password: string;
 }
 const validate = (values: values) => {
   const errors: { [key: string]: string } = {};
@@ -38,6 +39,7 @@ const validate = (values: values) => {
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useUser();
 
   return (
     <div className="bg-black min-h-screen w-full flex justify-center items-center">
@@ -65,17 +67,22 @@ const Login = () => {
                 payload.username = values.emailOrUsername;
               }
 
-              const response = await axiosInstance.post('/login', payload);
+              const response = await axiosInstance.post("/login", payload);
               console.log(response, "Whole response");
 
-              console.log('Login successful:', response.data);
+              console.log("Login successful:", response.data);
 
               if (response.status === 200) {
-                localStorage.setItem("jwt",response.data.token)
+                login({
+                  id:response?.data?.user.id,
+                  username:response?.data?.user?.username,
+                  email:response.data?.user?.email
+                })
+                localStorage.setItem("jwt", response.data.token);
                 navigate("/");
               }
             } catch (error) {
-              console.error('Login error:', error);
+              console.error("Login error:", error);
             } finally {
               setSubmitting(false);
             }
@@ -84,7 +91,10 @@ const Login = () => {
           {({ isSubmitting }) => (
             <Form>
               <div className="mb-4">
-                <label htmlFor="emailOrUsername" className="block text-gray-400 mb-2">
+                <label
+                  htmlFor="emailOrUsername"
+                  className="block text-gray-400 mb-2"
+                >
                   Email or Username
                 </label>
                 <Field
@@ -94,7 +104,11 @@ const Login = () => {
                   className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   id="emailOrUsername"
                 />
-                <ErrorMessage name="emailOrUsername" component="p" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="emailOrUsername"
+                  component="p"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
               <div className="mb-4">
                 <label htmlFor="password" className="block text-gray-400 mb-2">
@@ -107,7 +121,11 @@ const Login = () => {
                   className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   id="password"
                 />
-                <ErrorMessage name="password" component="p" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage
+                  name="password"
+                  component="p"
+                  className="text-red-500 text-sm mt-1"
+                />
               </div>
               <button
                 type="submit"

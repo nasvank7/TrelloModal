@@ -1,6 +1,6 @@
 // import React from 'react'
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PlusIcons from "../Icons/PlusIcons";
 import { Column, Id, Task } from "../types";
 import ColumnContainer from "./ColumnContainer";
@@ -17,7 +17,10 @@ import {
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./taskCard";
+import { useUser } from "../context/userContext";
+import { axiosInstanceForColumn } from "../config/AxiosInterceptors";
 const TrelloBoard = () => {
+  const user = useUser();
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -29,12 +32,34 @@ const TrelloBoard = () => {
       },
     })
   );
-  const createNewColumn = () => {
+
+  useEffect(() => {
+    const fetchAllColumn = async () => {
+      const response = await axiosInstanceForColumn.get(
+        `/column/${user?.user?.id}`
+      );
+
+      if (response.status === 200) {
+        setColumns([...columns, ...response.data]);
+      }
+    };
+    fetchAllColumn();
+  }, [user?.user?.id]);
+
+  
+  const createNewColumn = async () => {
     const columnToAdd: Column = {
       id: generateId(),
+      userId: user?.user?.id,
       title: `Column ${columns.length + 1}`,
     };
-    setColumns([...columns, columnToAdd]);
+    const response = await axiosInstanceForColumn.post(
+      "/createColumn",
+      columnToAdd
+    );
+    if (response.status === 200) {
+      setColumns([...columns, response.data]);
+    }
   };
   const generateId = () => {
     return Math.floor(Math.random() * 10001);
@@ -46,12 +71,13 @@ const TrelloBoard = () => {
     setTasks(newTask);
   };
 
-  const createTask = (columnId: Id, content: string) => {
+  const createTask = async (columnId: Id, content: string) => {
     const newTask: Task = {
       id: generateId(),
       columnId,
       content,
     };
+
     setTasks([...tasks, newTask]);
   };
 
