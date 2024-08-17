@@ -25,6 +25,7 @@ const TrelloBoard = () => {
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -46,7 +47,6 @@ const TrelloBoard = () => {
     fetchAllColumn();
   }, [user?.user?.id]);
 
-  
   const createNewColumn = async () => {
     const columnToAdd: Column = {
       id: generateId(),
@@ -95,14 +95,27 @@ const TrelloBoard = () => {
     const newTask = tasks.filter((task) => task.id !== id);
     setTasks(newTask);
   };
-  const updateColumn = (id: Id, title: string) => {
-    const newColumn = columns.map((col) => {
-      if (col.id !== id) {
-        return col;
+
+  const updateColumn = async (id: Id, title: string) => {
+    console.log(title, "this is title");
+
+    // const newColumn = columns.map((col) => {
+    //   if (col.id !== id) {
+    //     return col;
+    //   }
+    //   return { ...col, title };
+    // });
+    // setColumns(newColumn);
+    const response = await axiosInstanceForColumn.patch(
+      `/editColumnName/${id}`,
+      {
+        title: title,
       }
-      return { ...col, title };
-    });
-    setColumns(newColumn);
+    );
+    if (response.status === 200) {
+      console.log(response.data);
+      setColumns(response?.data);
+    }
   };
   const onDragStart = (e: DragStartEvent) => {
     console.log("Drag start", e);
@@ -168,7 +181,11 @@ const TrelloBoard = () => {
       });
     }
   };
-  const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+
+  const columnsId = useMemo(
+    () =>  columns.map((col) => col.id) ,
+    [columns]
+  );
   return (
     <div className="m-auto flex min-h-screen w-full items-center  overflow-x-auto overflow-y-hidden px-[40px] pt-12">
       <DndContext

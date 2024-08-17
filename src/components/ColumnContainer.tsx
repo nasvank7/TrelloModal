@@ -28,7 +28,7 @@ const ColumnContainer = (props: Props) => {
   } = props;
   const [editNode, setEditNode] = useState(false);
   const [addModal, setAddModal] = useState(false);
-
+  const [columnTitle, setColumnTitle] = useState<string>(column?.title);
   const [newTaskContent, setNewTaskContent] = useState("");
   const taskIds = useMemo(() => {
     return tasks.map((task) => task.id);
@@ -149,16 +149,20 @@ const ColumnContainer = (props: Props) => {
           {!editNode && column.title}
           {editNode && (
             <input
-              className="bg-black focus:border-rose-400 border rounded outline-none px-2"
-              value={column.title}
-              onChange={(e) => updateColumn(column.id, e.target.value)}
-              autoFocus
-              onBlur={() => setEditNode(false)}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                setEditNode(false);
-              }}
-            />
+            className="bg-black focus:border-rose-400 border rounded outline-none px-2"
+            value={columnTitle} // Bind the input to columnTitle state
+            onChange={(e) => setColumnTitle(e.target.value)} // Update state on change
+            autoFocus
+            onBlur={() => {
+              updateColumn(column.id, columnTitle); // Update column on blur
+              setEditNode(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              updateColumn(column.id, columnTitle); // Update column on Enter key press
+              setEditNode(false);
+            }}
+          />
           )}
           <button
             onClick={() => {
